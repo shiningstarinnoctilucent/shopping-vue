@@ -147,15 +147,15 @@
                                 <input
                                     type="text"
                                     class="form-control"
-                                    v-model.trim="orderForm.name"
-                                    required
+                                    v-model="orderForm.name"
                                     :class="{
                                         'is-invalid':
-                                            showValidation && !orderForm.name,
+                                            showValidation && !isNameValid,
                                     }"
+                                    required
                                 />
                                 <div class="invalid-feedback">
-                                    Please enter your name
+                                    Please enter a valid name (letters only)
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -166,15 +166,16 @@
                                 <input
                                     type="tel"
                                     class="form-control"
-                                    v-model.trim="orderForm.phone"
-                                    required
+                                    v-model="orderForm.phone"
                                     :class="{
                                         'is-invalid':
-                                            showValidation && !isValidPhone,
+                                            showValidation && !isPhoneValid,
                                     }"
+                                    required
                                 />
                                 <div class="invalid-feedback">
-                                    Please enter a valid phone number
+                                    Please enter a valid phone number (numbers
+                                    only)
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -238,10 +239,23 @@
             };
         },
         computed: {
-            isValidPhone() {
-                // Simple China mobile phone number verification
-                const phoneRegex = /^1[3-9]\d{9}$/;
-                return phoneRegex.test(this.orderForm.phone);
+            isNameValid() {
+                // Only letters and spaces are allowed.
+                const nameRegex = /^[A-Za-z\s]+$/;
+                return nameRegex.test(this.orderForm.name.trim());
+            },
+            isPhoneValid() {
+                // 只允许数字
+                const phoneRegex = /^\d+$/;
+                return phoneRegex.test(this.orderForm.phone.trim());
+            },
+            isFormValid() {
+                return (
+                    this.isNameValid &&
+                    this.isPhoneValid &&
+                    this.orderForm.email &&
+                    this.orderForm.address
+                );
             },
             isValidEmail() {
                 // Mailbox authentication
@@ -250,10 +264,6 @@
                     !this.orderForm.email ||
                     emailRegex.test(this.orderForm.email)
                 );
-            },
-            isFormValid() {
-                // Verify only required fields: name and phone number.
-                return this.orderForm.name.trim() && this.isValidPhone;
             },
             totalAmount() {
                 return this.cart.reduce(
