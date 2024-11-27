@@ -217,12 +217,33 @@
                 </div>
             </div>
         </div>
+
+        <!-- Bootstrap Toast for notifications -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div
+                id="orderToast"
+                class="toast align-items-center text-bg-success border-0"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+            >
+                <div class="d-flex">
+                    <div class="toast-body">Order submitted successfully!</div>
+                    <button
+                        type="button"
+                        class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"
+                    ></button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
     // Introduce Bootstrap Modal at the top of the file.
-    import { Modal } from "bootstrap";
+    import { Modal, Toast } from "bootstrap";
     import { orderApi } from "@/api/order";
 
     export default {
@@ -234,35 +255,34 @@
                     name: "",
                     phone: "",
                     email: "",
+                    address: "",
                 },
                 showValidation: false,
             };
         },
         computed: {
             isNameValid() {
-                // Only letters and spaces are allowed.
-                const nameRegex = /^[A-Za-z\s]+$/;
-                return nameRegex.test(this.orderForm.name.trim());
+                return (
+                    this.orderForm.name &&
+                    /^[A-Za-z\s]+$/.test(this.orderForm.name.trim())
+                );
             },
             isPhoneValid() {
-                // 只允许数字
-                const phoneRegex = /^\d+$/;
-                return phoneRegex.test(this.orderForm.phone.trim());
+                return (
+                    this.orderForm.phone &&
+                    /^\d+$/.test(this.orderForm.phone.trim())
+                );
+            },
+            isValidEmail() {
+                if (!this.orderForm.email) return false;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(this.orderForm.email.trim());
             },
             isFormValid() {
                 return (
                     this.isNameValid &&
                     this.isPhoneValid &&
-                    this.orderForm.email &&
-                    this.orderForm.address
-                );
-            },
-            isValidEmail() {
-                // Mailbox authentication
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return (
-                    !this.orderForm.email ||
-                    emailRegex.test(this.orderForm.email)
+                    (this.email ? this.isValidEmail : true)
                 );
             },
             totalAmount() {
@@ -306,10 +326,15 @@
                         modal.hide();
 
                         this.$emit("clear-cart");
-                        alert("Checkout successful!");
+
+                        // Show success toast
+                        const toastElement =
+                            document.getElementById("orderToast");
+                        const toast = new Toast(toastElement);
+                        toast.show();
                     } catch (error) {
                         console.error("Failed to submit order:", error);
-                        alert("Checkout failed, please try again");
+                        // Optionally, show an error toast
                     }
                 }
             },
