@@ -130,7 +130,7 @@
                         quantity: 1,
                     });
                 }
-                this.showToast(`Added ${lesson.name} to cart`);
+                this.showToast(`Added ${lesson.subject} to cart`);
             },
             removeFromCart(lesson) {
                 const index = this.cart.findIndex(

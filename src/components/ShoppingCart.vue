@@ -28,7 +28,9 @@
                             <div class="row align-items-center">
                                 <div class="col-md-2">
                                     <img
-                                        :src="item.image"
+                                        :src="
+                                            'http://localhost:8081' + item.image
+                                        "
                                         class="img-fluid rounded"
                                         :alt="item.name"
                                     />
@@ -41,7 +43,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     <span class="text-primary fw-bold"
-                                        >¥{{ item.price }}</span
+                                        >£{{ item.price }}</span
                                     >
                                 </div>
                                 <div class="col-md-3">
@@ -220,6 +222,7 @@
 <script>
     // Introduce Bootstrap Modal at the top of the file.
     import { Modal } from "bootstrap";
+    import { orderApi } from "@/api/order";
 
     export default {
         name: "ShoppingCart",
@@ -271,39 +274,33 @@
                 this.showValidation = false; // Reset verification status
                 modal.show();
             },
-            submitOrder() {
-                this.showValidation = true; // Display verification information
+            async submitOrder() {
+                this.showValidation = true;
 
                 if (this.isFormValid) {
-                    // Submit order logic
-                    fetch("/api/orders", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            lessonIds: this.cart.map((item) => item.id),
+                    try {
+                        const orderData = {
+                            lessons: this.cart.map((item) => ({
+                                id: item._id,
+                                spaces: item.quantity,
+                            })),
+                            totalAmount: this.totalAmount,
                             ...this.orderForm,
-                        }),
-                    })
-                        .then((response) => response.json())
-                        .then(() => {
-                            // Close the modal box
-                            const modal = Modal.getInstance(
-                                document.getElementById("checkoutModal")
-                            );
-                            modal.hide();
+                        };
 
-                            // Empty the shopping cart
-                            this.$emit("clear-cart");
+                        await orderApi.createOrder(orderData);
 
-                            // Show success prompt
-                            alert("Checkout successful!");
-                        })
-                        .catch((error) => {
-                            console.error("Error:", error);
-                            alert("Checkout failed, please try again");
-                        });
+                        const modal = Modal.getInstance(
+                            document.getElementById("checkoutModal")
+                        );
+                        modal.hide();
+
+                        this.$emit("clear-cart");
+                        alert("Checkout successful!");
+                    } catch (error) {
+                        console.error("Failed to submit order:", error);
+                        alert("Checkout failed, please try again");
+                    }
                 }
             },
             updateQuantity(item, quantity) {
