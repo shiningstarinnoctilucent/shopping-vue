@@ -8,7 +8,7 @@
                         class="form-control"
                         v-model="searchQuery"
                         placeholder="Search lessons"
-                        @input="onSearch"
+                        @input="handleSearch"
                     />
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="button">
@@ -21,10 +21,10 @@
                 <select
                     class="form-select"
                     v-model="sortOrder"
-                    @change="sortLessons"
+                    @change="handleSort"
                 >
-                    <option value="asc">Price Low to High</option>
-                    <option value="desc">Price High to Low</option>
+                    <option value="price:asc">Price Low to High</option>
+                    <option value="price:desc">Price High to Low</option>
                 </select>
             </div>
         </div>
@@ -36,59 +36,117 @@
                 :key="lesson.id"
             >
                 <div class="card h-100">
+                    <img
+                        :src="'http://localhost:8081' + lesson.image"
+                        class="card-img-top"
+                        :alt="lesson.subject"
+                    />
+                    <div class="card-header bg-light">
+                        <i :class="lesson.icon" class="me-2"></i>
+                        <span class="badge bg-primary">{{
+                            lesson.duration
+                        }}</span>
+                    </div>
                     <div class="card-body">
                         <h5 class="card-title">{{ lesson.subject }}</h5>
                         <p class="card-text">{{ lesson.description }}</p>
-                        <button
-                            class="btn btn-primary"
-                            @click="addToCart(lesson)"
-                            :disabled="lesson.spaces <= 0"
+                        <div class="mb-2">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            <span>{{ lesson.location }}</span>
+                        </div>
+                        <div class="mb-2">
+                            <i class="bi bi-person me-2"></i>
+                            <span>{{ lesson.instructor }}</span>
+                        </div>
+                        <div
+                            class="d-flex justify-content-between align-items-center"
                         >
-                            <i class="bi bi-cart-plus"></i>
-                            {{
-                                lesson.spaces > 0
-                                    ? "Add to Cart"
-                                    : "No Spaces Left"
-                            }}
-                        </button>
+                            <div>
+                                <h5 class="text-primary mb-0">
+                                    £{{ lesson.price }}
+                                </h5>
+                                <small class="text-muted">
+                                    {{ lesson.spaces }} spaces left
+                                </small>
+                            </div>
+                            <button
+                                class="btn btn-primary"
+                                @click="addToCart(lesson)"
+                                :disabled="lesson.spaces <= 0"
+                            >
+                                <i class="bi bi-cart-plus"></i>
+                                {{
+                                    lesson.spaces > 0
+                                        ? "Add to Cart"
+                                        : "No Spaces Left"
+                                }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div v-if="loading" class="loading-overlay">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div v-if="error" class="error-message">
+            {{ error }}
         </div>
     </div>
 </template>
 
 <script>
+    import { lessonApi } from "@/api";
+    import debounce from 'lodash/debounce';
+
     export default {
         name: "LessonList",
         data() {
             return {
                 lessons: [],
                 searchQuery: "",
-                sortOrder: "asc",
+                sortOrder: "price:asc",
+                loading: false,
+                error: null
             };
         },
         computed: {
             filteredLessons() {
-                return this.lessons
-                    .filter((lesson) =>
-                        lesson.subject
-                            .toLowerCase()
-                            .includes(this.searchQuery.toLowerCase())
-                    )
-                    .sort((a, b) => {
-                        if (this.sortOrder === "asc") return a.price - b.price;
-                        return b.price - a.price;
-                    });
-            },
+                return this.lessons;
+            }
+        },
+        created() {
+            // Create debounced search function
+            this.debouncedSearch = debounce(this.fetchLessons, 300);
         },
         methods: {
-            fetchLessons() {
-                fetch("/api/lessons")
-                    .then((response) => response.json())
-                    .then((data) => {
-                        this.lessons = data;
-                    });
+            async fetchLessons() {
+                try {
+                    this.loading = true;
+                    this.error = null;
+                    
+                    const params = {
+                        search: this.searchQuery,
+                        sort: this.sortOrder
+                    };
+
+                    const data = await lessonApi.getLessons(params);
+                    this.lessons = data;
+                } catch (error) {
+                    console.error("Failed to fetch lessons:", error);
+                    this.error = "Failed to load lessons. Please try again.";
+                } finally {
+                    this.loading = false;
+                }
+            },
+            handleSearch() {
+                this.debouncedSearch();
+            },
+            handleSort() {
+                this.fetchLessons();
             },
             addToCart(lesson) {
                 if (lesson.spaces > 0) {
@@ -98,16 +156,46 @@
                         availableSpaces: lesson.spaces,
                     });
                 }
-            },
-            onSearch() {
-                // 实时搜索功能
-            },
-            sortLessons() {
-                // 触发排序
-            },
+            }
         },
         mounted() {
             this.fetchLessons();
-        },
+        }
     };
 </script>
+
+<style scoped>
+    .card {
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .card-header i {
+        font-size: 1.2rem;
+    }
+
+    .badge {
+        font-weight: normal;
+    }
+
+    /* Add loading and error states styles */
+    .loading-overlay {
+        position: relative;
+        min-height: 200px;
+    }
+
+    .error-message {
+        color: #dc3545;
+        text-align: center;
+        padding: 1rem;
+    }
+</style>

@@ -13,6 +13,17 @@ const requestInterceptor = (config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Clean params
+    if (config.params) {
+        config.params = Object.fromEntries(
+            Object.entries(config.params).filter(
+                ([_, value]) =>
+                    value !== undefined && value !== null && value !== ""
+            )
+        );
+    }
+
     return config;
 };
 
@@ -47,8 +58,14 @@ const request = async (url, options = {}) => {
         // Apply request interceptor
         const interceptedConfig = requestInterceptor(config);
 
-        // Build full URL
-        const fullUrl = `${interceptedConfig.baseURL}${url}`;
+        // Build full URL with query params
+        let fullUrl = `${interceptedConfig.baseURL}${url}`;
+        if (interceptedConfig.params) {
+            const queryString = new URLSearchParams(
+                interceptedConfig.params
+            ).toString();
+            fullUrl += `?${queryString}`;
+        }
 
         // Make request
         const response = await fetch(fullUrl, interceptedConfig);
