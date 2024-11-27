@@ -320,21 +320,20 @@
 
                         await orderApi.createOrder(orderData);
 
-                        const modal = Modal.getInstance(
-                            document.getElementById("checkoutModal")
-                        );
-                        modal.hide();
-
-                        this.$emit("clear-cart");
-
                         // Show success toast
                         const toastElement =
                             document.getElementById("orderToast");
                         const toast = new Toast(toastElement);
                         toast.show();
+
+                        // Clear cart and close modal
+                        this.$emit("clear-cart");
+                        const modal = Modal.getInstance(
+                            document.getElementById("checkoutModal")
+                        );
+                        modal.hide();
                     } catch (error) {
                         console.error("Failed to submit order:", error);
-                        // Optionally, show an error toast
                     }
                 }
             },

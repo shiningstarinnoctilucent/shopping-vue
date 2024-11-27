@@ -154,7 +154,6 @@
             },
             clearCart() {
                 this.cart = [];
-                this.currentView = "lessons";
             },
         },
     };
