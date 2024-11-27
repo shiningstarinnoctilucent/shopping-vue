@@ -25,6 +25,18 @@
                 >
                     <option value="price:asc">Price Low to High</option>
                     <option value="price:desc">Price High to Low</option>
+                    <option value="subject:asc">Subject A to Z</option>
+                    <option value="subject:desc">Subject Z to A</option>
+                    <option value="duration:asc">Duration Short to Long</option>
+                    <option value="duration:desc">
+                        Duration Long to Short
+                    </option>
+                    <option value="location:asc">Location A to Z</option>
+                    <option value="location:desc">Location Z to A</option>
+                    <option value="instructor:asc">Instructor A to Z</option>
+                    <option value="instructor:desc">Instructor Z to A</option>
+                    <option value="spaces:asc">Spaces Low to High</option>
+                    <option value="spaces:desc">Spaces High to Low</option>
                 </select>
             </div>
         </div>
@@ -100,7 +112,7 @@
 
 <script>
     import { lessonApi } from "@/api";
-    import debounce from 'lodash/debounce';
+    import debounce from "lodash/debounce";
 
     export default {
         name: "LessonList",
@@ -110,13 +122,13 @@
                 searchQuery: "",
                 sortOrder: "price:asc",
                 loading: false,
-                error: null
+                error: null,
             };
         },
         computed: {
             filteredLessons() {
                 return this.lessons;
-            }
+            },
         },
         created() {
             // Create debounced search function
@@ -127,10 +139,10 @@
                 try {
                     this.loading = true;
                     this.error = null;
-                    
+
                     const params = {
                         search: this.searchQuery,
-                        sort: this.sortOrder
+                        sort: this.sortOrder,
                     };
 
                     const data = await lessonApi.getLessons(params);
@@ -156,11 +168,11 @@
                         availableSpaces: lesson.spaces,
                     });
                 }
-            }
+            },
         },
         mounted() {
             this.fetchLessons();
-        }
+        },
     };
 </script>
 
