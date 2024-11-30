@@ -1,6 +1,6 @@
 // Basic configuration for fetch requests
 const baseConfig = {
-    baseURL: "http://localhost:8081/api",
+    baseURL: process.env.VUE_APP_API_URL,
     headers: {
         "Content-Type": "application/json",
     },

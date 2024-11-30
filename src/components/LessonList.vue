@@ -49,7 +49,7 @@
             >
                 <div class="card h-100">
                     <img
-                        :src="'http://localhost:8081' + lesson.image"
+                        :src="getImageUrl(lesson.image)"
                         class="card-img-top"
                         :alt="lesson.subject"
                     />
@@ -129,6 +129,9 @@
             filteredLessons() {
                 return this.lessons;
             },
+            apiUrl() {
+                return process.env.VUE_APP_API_URL;
+            },
         },
         created() {
             // Create debounced search function
@@ -168,6 +171,9 @@
                         availableSpaces: lesson.spaces,
                     });
                 }
+            },
+            getImageUrl(image) {
+                return `${this.apiUrl}${image}`;
             },
         },
         mounted() {

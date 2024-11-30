@@ -28,9 +28,7 @@
                             <div class="row align-items-center">
                                 <div class="col-md-2">
                                     <img
-                                        :src="
-                                            'http://localhost:8081' + item.image
-                                        "
+                                        :src="getImageUrl(item.image)"
                                         class="img-fluid rounded"
                                         :alt="item.name"
                                     />
@@ -291,6 +289,9 @@
                     0
                 );
             },
+            apiUrl() {
+                return process.env.VUE_APP_API_URL;
+            },
         },
         methods: {
             removeFromCart(item) {
@@ -339,6 +340,9 @@
             },
             updateQuantity(item, quantity) {
                 this.$emit("update-quantity", item, quantity);
+            },
+            getImageUrl(image) {
+                return `${this.apiUrl}${image}`;
             },
         },
     };
