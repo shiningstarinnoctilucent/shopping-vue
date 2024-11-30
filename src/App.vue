@@ -120,7 +120,7 @@
             },
             addToCart(lesson) {
                 const existingItem = this.cart.find(
-                    (item) => item.lesson.id === lesson.id
+                    (item) => item.lesson._id === lesson._id
                 );
                 if (existingItem) {
                     existingItem.quantity += 1;
@@ -134,7 +134,7 @@
             },
             removeFromCart(lesson) {
                 const index = this.cart.findIndex(
-                    (item) => item.lesson.id === lesson.id
+                    (item) => item.lesson._id === lesson._id
                 );
                 if (index !== -1) {
                     this.cart.splice(index, 1);
@@ -142,7 +142,7 @@
             },
             updateQuantity(lesson, quantity) {
                 const item = this.cart.find(
-                    (item) => item.lesson.id === lesson.id
+                    (item) => item.lesson._id === lesson._id
                 );
                 if (item) {
                     if (quantity <= 0) {
